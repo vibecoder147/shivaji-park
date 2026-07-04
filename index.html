@@ -871,7 +871,8 @@ let zoom = 1;
 const stage = document.getElementById('mapZoomStage');
 function applyZoom() { stage.style.transform = 'scale(' + zoom + ')'; }
 document.getElementById('zoomIn').addEventListener('click', () => { zoom = Math.min(2.2, zoom + 0.2); applyZoom(); });
-document.getElementById('zoomOut').addEventListener('click', () => { zoom = Math.max(1, zoom - 0.2); applyZoom(); });
+// Changed the minimum zoom limit from 1 to 0.4
+document.getElementById('zoomOut').addEventListener('click', () => { zoom = Math.max(0.4, zoom - 0.2); applyZoom(); });
 document.getElementById('zoomReset').addEventListener('click', () => { zoom = 1; applyZoom(); });
 
 // ---------- Directory table ----------
