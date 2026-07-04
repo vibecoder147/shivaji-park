@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Shivaji Park | Residential Layout — Manora, Washim</title>
+<link rel="icon" href="data:;base64,iVBORw0KGgo=">
+<meta name="description" content="Shivaji Park — RERA approved residential plot layout in Mouze Somtana, Manora, Dist. Washim. Explore the interactive plot map, areas, facing direction and book your plot."/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          emerald: { 50:'#f0fdf4',100:'#dcfce7',200:'#b0f0d6',400:'#34d399',500:'#10b981',600:'#059669',700:'#047857',800:'#064e3b',900:'#003527' },
+          slate: { 50:'#f8f9ff',100:'#eff4ff',700:'#334155',900:'#0d1c2f' },
+          sand: { 50:'#fdfaf3', 100:'#f7f0de' },
+        },
+        fontFamily: {
+          display: ['Montserrat','sans-serif'],
+          body: ['Inter','sans-serif'],
+        },
+        boxShadow: {
+          'soft': '0 4px 24px -4px rgba(6,78,59,0.08)',
+          'glow': '0 0 0 4px rgba(16,185,129,0.18)',
+        }
+      }
+    }
+  }
+</script>
+<style>
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', sans-serif; background:#f8f9ff; color:#0d1c2f; }
+  h1,h2,h3,h4,.font-display { font-family:'Montserrat', sans-serif; }
+
+  .custom-scroll::-webkit-scrollbar { width:6px; height:6px; }
+  .custom-scroll::-webkit-scrollbar-thumb { background-color:#cbd5e1; border-radius:10px; }
+
+  /* ===== Map ===== */
+  .plot-map-wrap { position:relative; background:#fff; }
+  .plot-hotspot {
+    position:absolute; cursor:pointer;
+    background: rgba(16,185,129,0.0);
+    border: 1.5px solid rgba(6,78,59,0.0);
+    transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
+    border-radius: 2px;
+  }
+  .plot-hotspot:hover {
+    background: rgba(16,185,129,0.30);
+    border-color: #059669;
+  }
+  .plot-hotspot.active {
+    background: rgba(5,150,105,0.45);
+    border-color: #003527;
+    box-shadow: 0 0 0 2px rgba(16,185,129,0.35);
+    z-index: 5;
+  }
+  .plot-hotspot.status-sold { background: rgba(244,63,94,0.18); }
+  .plot-hotspot.status-sold:hover { background: rgba(244,63,94,0.32); border-color:#be123c; }
+  .plot-hotspot.status-reserved { background: rgba(245,158,11,0.18); }
+  .plot-hotspot.status-reserved:hover { background: rgba(245,158,11,0.32); border-color:#b45309; }
+
+  .map-zoom-stage { transform-origin: 0 0; transition: transform .25s ease; }
+
+  .pulse-dot { position:absolute; width:10px; height:10px; border-radius:50%; background:#10b981; }
+  .pulse-dot::after {
+    content:''; position:absolute; inset:-6px; border-radius:50%;
+    border:2px solid #10b981; animation: pulse-ring 1.8s ease-out infinite;
+  }
+  @keyframes pulse-ring { 0%{ transform:scale(0.5); opacity:1;} 100%{ transform:scale(1.8); opacity:0;} }
+
+  .reveal { opacity:0; transform: translateY(16px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.in { opacity:1; transform:none; }
+
+  .tag-chip { font-family:'Inter'; font-size:11px; font-weight:700; letter-spacing:.04em; }
+
+  /* sticky sidebar on desktop, sheet on mobile */
+  @media (max-width: 1023px) {
+    #detailsPanel.sheet-hidden { transform: translateY(100%); }
+    #detailsPanel { transition: transform .3s ease; }
+  }
+</style>
+</head>
+<body class="antialiased">
+
+<!-- ============ HEADER ============ -->
+<header class="sticky top-0 z-40 bg-emerald-900/95 backdrop-blur text-white border-b border-emerald-800">
+  <div class="max-w-[1400px] mx-auto px-5 md:px-8 py-3.5 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center font-display font-extrabold text-emerald-900 text-sm shrink-0">SP</div>
+      <div class="leading-tight">
+        <p class="font-display font-bold tracking-tight text-base md:text-lg"><span data-i18n="header_title_mr">शिवाजी पार्क</span> <span class="text-emerald-300 font-medium" data-i18n="header_title_en">| SHIVAJI PARK</span></p>
+        <p class="text-[10px] md:text-[11px] text-emerald-200 tracking-wide" data-i18n="header_subtitle">RESIDENTIAL LAYOUT · MOUZE SOMTANA, MANORA, DIST. WASHIM</p>
+      </div>
+    </a>
+    <nav class="hidden lg:flex items-center gap-7 text-sm font-medium text-emerald-100">
+      <a href="#overview" data-i18n="nav_overview" class="hover:text-white transition">Overview</a>
+      <a href="#amenities" data-i18n="nav_amenities" class="hover:text-white transition">Amenities</a>
+      <a href="#map" data-i18n="nav_map" class="hover:text-white transition">Inventory Map</a>
+      <a href="#directory" data-i18n="nav_directory" class="hover:text-white transition">Plot Directory</a>
+      <a href="#downloads" data-i18n="nav_downloads" class="hover:text-white transition">Downloads</a>
+      <a href="#contact" data-i18n="nav_contact" class="hover:text-white transition">Contact</a>
+    </nav>
+  <div class="flex items-center gap-4 shrink-0">
+    <select id="langSelector" class="bg-emerald-800 text-white border border-emerald-700 rounded-md px-2 py-1.5 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400">
+      <option value="en">English</option>
+      <option value="hi">हिन्दी</option>
+      <option value="mr">मराठी</option>
+    </select>
+    <a href="#contact" data-i18n="contact_sales" class="bg-white text-emerald-900 px-4 md:px-5 py-2 rounded-md font-semibold text-xs md:text-sm hover:bg-emerald-50 transition shrink-0">Contact Sales</a>
+  </div>
+</header>
+
+<div id="top"></div>
+
+<!-- ============ HERO ============ -->
+<section class="relative overflow-hidden bg-emerald-900 text-white">
+  <div class="absolute inset-0 opacity-[0.07] bg-[radial-gradient(circle_at_20%_20%,white,transparent_35%),radial-gradient(circle_at_80%_60%,white,transparent_30%)]"></div>
+  <div class="max-w-[1400px] mx-auto px-5 md:px-8 pt-14 pb-16 md:pt-20 md:pb-24 grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center relative">
+    <div class="reveal in">
+      <span class="inline-flex items-center gap-2 bg-emerald-800/60 border border-emerald-600/50 text-emerald-200 tag-chip uppercase px-3 py-1.5 rounded-full mb-5">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> <span data-i18n="hero_badge">Town Planning Approved Layout · Booking Open</span>
+      </span>
+      <h1 class="font-display font-extrabold text-4xl sm:text-5xl lg:text-[3.4rem] leading-[1.05] tracking-tight">
+        <span data-i18n="hero_title_1">Own a plot that</span><br/> <span data-i18n="hero_title_2">grows with</span> <span class="text-emerald-300" data-i18n="hero_title_3">Manora.</span>
+      </h1>
+      <p class="mt-5 text-emerald-100/90 text-base md:text-lg max-w-xl leading-relaxed" data-i18n="hero_desc">
+        62 residential plots laid out across Gut No. 102, Mouze Somtana — wide concrete roads, dedicated open spaces and an amenity plot, just behind Srushti Garden, next to Rahul Park, Manora.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="#map" class="bg-emerald-400 text-emerald-950 px-6 py-3.5 rounded-md font-bold text-sm hover:bg-emerald-300 transition flex items-center gap-2">
+          <span data-i18n="hero_btn_map">Explore the Plot Map</span>
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+        <a href="#directory" class="border border-emerald-400/40 text-emerald-100 px-6 py-3.5 rounded-md font-semibold text-sm hover:bg-emerald-800/50 transition" data-i18n="hero_btn_list">
+          Browse Plot List
+        </a>
+      </div>
+      <div class="mt-10 grid grid-cols-3 gap-4 max-w-md">
+        <div><p class="font-display font-extrabold text-2xl md:text-3xl">62</p><p class="text-emerald-300 text-xs mt-1 tag-chip uppercase" data-i18n="hero_stat_1">Total Plots</p></div>
+        <div><p class="font-display font-extrabold text-2xl md:text-3xl">1,722<span class="text-base font-semibold">m²</span></p><p class="text-emerald-300 text-xs mt-1 tag-chip uppercase" data-i18n="hero_stat_2">Amenity Space</p></div>
+        <div><p class="font-display font-extrabold text-2xl md:text-3xl">1,723<span class="text-base font-semibold">m²</span></p><p class="text-emerald-300 text-xs mt-1 tag-chip uppercase" data-i18n="hero_stat_3">Open Spaces (2)</p></div>
+      </div>
+    </div>
+    <div class="reveal in relative">
+      <div class="rounded-2xl overflow-hidden shadow-2xl border border-emerald-700/50 rotate-1 hover:rotate-0 transition-transform duration-500">
+        <img src="assets/images/layout-map.jpg" alt="Shivaji Park layout plan preview" class="w-full h-full object-cover" onerror="this.src='layout-map.png'"/>
+      </div>
+      <div class="absolute -bottom-5 -left-5 bg-white text-emerald-900 rounded-xl shadow-xl px-5 py-3.5 hidden sm:block">
+        <p class="text-[10px] tag-chip uppercase text-emerald-700" data-i18n="hero_float_1">RERA Approved Layout</p>
+        <p class="font-display font-bold text-sm" data-i18n="hero_float_2">Town Planning Sanctioned</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ OVERVIEW ============ -->
+<section id="overview" class="max-w-[1400px] mx-auto px-5 md:px-8 py-16 md:py-24">
+  <div class="grid lg:grid-cols-[0.9fr_1.1fr] gap-12 lg:gap-20 items-start">
+    <div class="reveal">
+      <span class="tag-chip uppercase text-emerald-700" data-i18n="ov_tag">Project Overview</span>
+      <h2 class="font-display font-bold text-3xl md:text-4xl mt-2 mb-5 leading-tight" data-i18n="ov_title">A layout planned for everyday living, not just investment.</h2>
+      <p class="text-slate-700 leading-relaxed" data-i18n="ov_p1">
+        Shivaji Park sits within Gut No. 102 of Mouze Somtana, Taluka Manora, District Washim — a quiet, well-connected pocket close to Shivaji Chowk and the Mangrul–Manora road. The layout is town-planning approved, with 30 ft. and 40 ft. wide roads, concrete storm-water drains and tree-lined avenues running through every street.
+      </p>
+      <p class="text-slate-700 leading-relaxed mt-4" data-i18n="ov_p2">
+        Every plot has been surveyed and tabulated individually — net area, road frontage and orientation are all on record, so what you see on the map is what gets registered in your name.
+      </p>
+      <div class="mt-8 grid sm:grid-cols-2 gap-4">
+        <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+          <p class="font-display font-bold text-emerald-900" data-i18n="ov_box1_title">Open Space — 1,152.84 m²</p>
+          <p class="text-xs text-slate-600 mt-1" data-i18n="ov_box1_desc">Landscaped green next to plots 53–62, with planned tree plantation.</p>
+        </div>
+        <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+          <p class="font-display font-bold text-emerald-900" data-i18n="ov_box2_title">Open Space — 569.93 m²</p>
+          <p class="text-xs text-slate-600 mt-1" data-i18n="ov_box2_desc">Second green pocket beside plots 20 &amp; 31, central to the layout.</p>
+        </div>
+        <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+          <p class="font-display font-bold text-emerald-900" data-i18n="ov_box3_title">Amenity Plot — 1,721.22 m²</p>
+          <p class="text-xs text-slate-600 mt-1" data-i18n="ov_box3_desc">Reserved community amenity space along the western edge.</p>
+        </div>
+        <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+          <p class="font-display font-bold text-emerald-900" data-i18n="ov_box4_title">Roads — 9 m &amp; 12 m wide</p>
+          <p class="text-xs text-slate-600 mt-1" data-i18n="ov_box4_desc">Every internal road is concrete, lit and tree-lined on both sides.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="reveal">
+      <div class="rounded-2xl border border-gray-200 bg-white shadow-soft overflow-hidden">
+        <div class="px-6 py-4 bg-slate-900 text-white">
+          <p class="font-display font-bold" data-i18n="nearby_title">What's nearby</p>
+          <p class="text-xs text-slate-300 mt-0.5" data-i18n="nearby_desc">Landmarks referenced on the official location map</p>
+        </div>
+        <ul class="divide-y divide-gray-100 text-sm">
+          <li class="px-6 py-3.5 flex items-center justify-between"><span class="text-slate-700" data-i18n="nb_1">Shivaji Chowk</span><span class="text-emerald-700 text-xs font-semibold" data-i18n="nb_1_tag">On the layout road</span></li>
+          <li class="px-6 py-3.5 flex items-center justify-between"><span class="text-slate-700" data-i18n="nb_2">Rahul Park</span><span class="text-emerald-700 text-xs font-semibold" data-i18n="nb_2_tag">Adjoining the site</span></li>
+          <li class="px-6 py-3.5 flex items-center justify-between"><span class="text-slate-700" data-i18n="nb_3">Srushti Garden</span><span class="text-emerald-700 text-xs font-semibold" data-i18n="nb_3_tag">Directly behind layout</span></li>
+          <li class="px-6 py-3.5 flex items-center justify-between"><span class="text-slate-700" data-i18n="nb_4">Gajanan Nagari</span><span class="text-emerald-700 text-xs font-semibold" data-i18n="nb_4_tag">Adjoining locality</span></li>
+          <li class="px-6 py-3.5 flex items-center justify-between"><span class="text-slate-700" data-i18n="nb_5">Pratik Primary School</span><span class="text-emerald-700 text-xs font-semibold" data-i18n="nb_5_tag">Nearby</span></li>
+          <li class="px-6 py-3.5 flex items-center justify-between"><span class="text-slate-700" data-i18n="nb_6">Gyanpeeth College</span><span class="text-emerald-700 text-xs font-semibold" data-i18n="nb_6_tag">Nearby</span></li>
+          <li class="px-6 py-3.5 flex items-center justify-between"><span class="text-slate-700" data-i18n="nb_7">Somtana Chowk &amp; Mangrul–Manora Road</span><span class="text-emerald-700 text-xs font-semibold" data-i18n="nb_7_tag">Connecting route</span></li>
+        </ul>
+        <div class="px-6 py-4 bg-gray-50 text-xs text-slate-500 leading-relaxed" data-i18n="nb_footer">
+          Location references are reproduced from the official layout brochure. Distances are indicative — please verify on-ground before purchase.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ AMENITIES ============ -->
+<section id="amenities" class="bg-slate-900 text-white py-16 md:py-24">
+  <div class="max-w-[1400px] mx-auto px-5 md:px-8">
+    <div class="max-w-2xl reveal">
+      <span class="tag-chip uppercase text-emerald-400" data-i18n="am_tag">Project Amenities</span>
+      <h2 class="font-display font-bold text-3xl md:text-4xl mt-2" data-i18n="am_title">Built around the basics, done properly.</h2>
+    </div>
+    <div class="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div class="bg-white/5 border border-white/10 rounded-xl p-6 reveal">
+        <div class="w-11 h-11 rounded-lg bg-emerald-400/15 flex items-center justify-center mb-4 text-emerald-300">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 17V7a2 2 0 012-2h2a2 2 0 012 2v10M5 21V11a2 2 0 012-2h1M17 21V11a2 2 0 00-2-2h-1M3 21h18"/></svg>
+        </div>
+        <p class="font-display font-bold" data-i18n="am_1_title">Town Planning Approved</p>
+        <p class="text-sm text-slate-300 mt-1.5" data-i18n="am_1_desc">The complete layout carries Town Planning sanction, keeping your registration process clean.</p>
+      </div>
+      <div class="bg-white/5 border border-white/10 rounded-xl p-6 reveal">
+        <div class="w-11 h-11 rounded-lg bg-emerald-400/15 flex items-center justify-center mb-4 text-emerald-300">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 19h16M4 19V7l8-4 8 4v12M9 19v-6h6v6"/></svg>
+        </div>
+        <p class="font-display font-bold" data-i18n="am_2_title">30 ft. &amp; 40 ft. Wide Roads</p>
+        <p class="text-sm text-slate-300 mt-1.5" data-i18n="am_2_desc">Generous internal roads for comfortable traffic flow and future-ready access.</p>
+      </div>
+      <div class="bg-white/5 border border-white/10 rounded-xl p-6 reveal">
+        <div class="w-11 h-11 rounded-lg bg-emerald-400/15 flex items-center justify-center mb-4 text-emerald-300">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 17l4-7 4 4 4-9 6 12H3z"/></svg>
+        </div>
+        <p class="font-display font-bold" data-i18n="am_3_title">Concrete Storm-Water Drains</p>
+        <p class="text-sm text-slate-300 mt-1.5" data-i18n="am_3_desc">Cement-concrete drainage along the roads to keep the layout monsoon-ready.</p>
+      </div>
+      <div class="bg-white/5 border border-white/10 rounded-xl p-6 reveal">
+        <div class="w-11 h-11 rounded-lg bg-emerald-400/15 flex items-center justify-center mb-4 text-emerald-300">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3v4m0 12v4m10-10h-4M6 12H2m15.36-6.36l-2.83 2.83M9.47 14.53l-2.83 2.83m12.72 0l-2.83-2.83M9.47 9.47L6.64 6.64"/></svg>
+        </div>
+        <p class="font-display font-bold" data-i18n="am_4_title">Electric Poles &amp; Street Lights</p>
+        <p class="text-sm text-slate-300 mt-1.5" data-i18n="am_4_desc">Well-lit roads across the layout for safer evenings.</p>
+      </div>
+      <div class="bg-white/5 border border-white/10 rounded-xl p-6 reveal">
+        <div class="w-11 h-11 rounded-lg bg-emerald-400/15 flex items-center justify-center mb-4 text-emerald-300">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 2v4m0 12v4m10-10h-4M6 12H2m15.36-6.36l-2.83 2.83M9.47 14.53l-2.83 2.83m12.72 0l-2.83-2.83M9.47 9.47L6.64 6.64"/></svg>
+        </div>
+        <p class="font-display font-bold" data-i18n="am_5_title">Tree Plantation Throughout</p>
+        <p class="text-sm text-slate-300 mt-1.5" data-i18n="am_5_desc">Both open spaces and every road edge are planned for avenue plantation.</p>
+      </div>
+      <div class="bg-white/5 border border-white/10 rounded-xl p-6 reveal">
+        <div class="w-11 h-11 rounded-lg bg-emerald-400/15 flex items-center justify-center mb-4 text-emerald-300">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m5-2.13a4 4 0 100-8 4 4 0 000 8z"/></svg>
+        </div>
+        <p class="font-display font-bold" data-i18n="am_6_title">Established Neighbourhood</p>
+        <p class="text-sm text-slate-300 mt-1.5" data-i18n="am_6_desc">Located right next to an already settled, lived-in residential pocket.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ INTERACTIVE MAP ============ -->
+<section id="map" class="max-w-[1400px] mx-auto px-5 md:px-8 py-16 md:py-24">
+  <div class="max-w-2xl mb-8 reveal">
+    <span class="tag-chip uppercase text-emerald-700" data-i18n="map_tag">Interactive Inventory Map</span>
+    <h2 class="font-display font-bold text-3xl md:text-4xl mt-2" data-i18n="map_title">Click any plot to see its details.</h2>
+    <p class="text-slate-600 mt-3" data-i18n="map_desc">Tap a plot on the layout below — its area, road frontage, facing direction and Vastu notes will appear instantly. Use the search box to jump straight to a plot number.</p>
+  </div>
+
+  <div class="flex flex-col lg:flex-row gap-0 lg:gap-6 rounded-2xl overflow-hidden border border-gray-200 shadow-soft bg-white">
+    <div class="flex-1 lg:max-w-[66%] bg-gray-100 relative">
+      <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-200 bg-white">
+        <div class="relative flex-1 max-w-xs">
+          <input id="plotSearch" type="text" inputmode="numeric" data-i18n="search_placeholder" placeholder="Jump to plot no. e.g. 27" class="w-full text-sm border border-gray-300 rounded-md pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"/>
+          <svg class="w-4 h-4 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/></svg>
+        </div>
+        <div class="hidden sm:flex items-center gap-1 ml-auto">
+          <button id="zoomOut" class="w-8 h-8 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 flex items-center justify-center font-bold">–</button>
+          <button id="zoomReset" class="px-3 h-8 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 text-xs font-semibold" data-i18n="map_reset">Reset</button>
+          <button id="zoomIn" class="w-8 h-8 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 flex items-center justify-center font-bold">+</button>
+        </div>
+      </div>
+
+      <div class="overflow-auto custom-scroll p-4 md:p-6" style="max-height: 78vh;">
+        <div id="mapZoomStage" class="map-zoom-stage relative mx-auto" style="width:100%; max-width:1100px;">
+          <div class="plot-map-wrap relative w-full rounded-lg overflow-hidden shadow-md select-none" style="aspect-ratio:1482/702;">
+            <img src="assets/images/layout-map.jpg" alt="Shivaji Park interactive layout plan" class="w-full h-full object-contain pointer-events-none" draggable="false" onerror="this.src='layout-map.png'"/>
+            <div id="hotspotLayer" class="absolute inset-0"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="absolute bottom-4 left-4 md:left-8 bg-white/95 backdrop-blur-sm px-3.5 py-2.5 border border-gray-200 rounded-lg text-[11px] space-y-1.5 shadow-sm">
+        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm" style="background:rgba(16,185,129,.35); border:1.5px solid #059669;"></span> <span data-i18n="status_available">Available</span></div>
+        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm" style="background:rgba(245,158,11,.30); border:1.5px solid #b45309;"></span> <span data-i18n="status_reserved">Reserved</span></div>
+        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-sm" style="background:rgba(244,63,94,.28); border:1.5px solid #be123c;"></span> <span data-i18n="status_sold">Sold</span></div>
+      </div>
+    </div>
+
+    <aside id="detailsPanel" class="w-full lg:w-[400px] bg-white border-t lg:border-t-0 lg:border-l border-gray-200 flex flex-col">
+      <div id="detailsEmpty" class="flex-1 flex flex-col items-center justify-center text-center px-10 py-16 text-slate-400">
+        <svg class="w-12 h-12 mb-4 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+        <p class="font-display font-semibold text-slate-500" data-i18n="det_empty_title">Select a plot on the map</p>
+        <p class="text-xs mt-1.5 text-slate-400" data-i18n="det_empty_desc">Its area, dimensions, facing and Vastu notes will show up here.</p>
+      </div>
+
+      <div id="detailsContent" class="hidden flex-1 flex flex-col">
+        <div class="px-6 py-5 border-b border-gray-100 bg-emerald-50/60">
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="tag-chip uppercase text-emerald-700" data-i18n="det_tag">Inventory Details</span>
+              <h3 class="font-display font-bold text-3xl text-slate-900 mt-1"><span data-i18n="det_plot_prefix">Plot</span> <span id="dPlotNo">--</span></h3>
+            </div>
+            <span id="dStatus" class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap">AVAILABLE</span>
+          </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto custom-scroll px-6 py-6 space-y-7" style="max-height:62vh;">
+          <div>
+            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3" data-i18n="det_spec_title">Area Specifications</h4>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-gray-50 p-3.5 rounded-lg border border-gray-100">
+                <p class="text-[10px] text-gray-500 font-bold uppercase" data-i18n="det_area_sqm">Net Area (sqm)</p>
+                <p class="text-xl font-display font-bold text-emerald-900" id="dSqm">--</p>
+              </div>
+              <div class="bg-gray-50 p-3.5 rounded-lg border border-gray-100">
+                <p class="text-[10px] text-gray-500 font-bold uppercase" data-i18n="det_area_sqft">Net Area (sqft)</p>
+                <p class="text-xl font-display font-bold text-emerald-900" id="dSqft">--</p>
+              </div>
+            </div>
+            <div id="dDimsRow" class="mt-3 flex items-center justify-between px-1 text-sm">
+              <span class="text-gray-600" data-i18n="det_dims">Plot dimensions</span>
+              <span class="font-semibold text-slate-900" id="dDims">--</span>
+            </div>
+            <div id="dDedRow" class="mt-2 flex items-center justify-between px-1 text-sm">
+              <span class="text-gray-600" data-i18n="det_ded">Curvature deduction</span>
+              <span class="font-semibold text-slate-900" id="dDed">--</span>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3" data-i18n="det_vastu_header">Direction &amp; Vastu</h4>
+            <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-9 h-9 rounded-full bg-emerald-900 text-white flex items-center justify-center shrink-0">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2L4 21l8-5 8 5z"/></svg>
+                </div>
+                <p class="font-display font-bold text-slate-900" id="dVastuTitle">--</p>
+              </div>
+              <p class="text-sm text-slate-700 leading-relaxed" id="dVastuNote">--</p>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-2 leading-relaxed" data-i18n="det_vastu_disclaimer">Facing direction is indicative, based on the layout's orientation on the approved plan. Please confirm exact direction with the site engineer before finalising.</p>
+          </div>
+
+          <div>
+            <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3" data-i18n="det_am_title">Project Amenities</h4>
+            <ul class="space-y-2.5 text-sm text-slate-700">
+              <li class="flex items-center gap-2.5"><span class="text-emerald-600">✓</span> <span data-i18n="det_am_1">Town planning approved layout</span></li>
+              <li class="flex items-center gap-2.5"><span class="text-emerald-600">✓</span> <span data-i18n="det_am_2">30 ft. &amp; 40 ft. wide concrete roads</span></li>
+              <li class="flex items-center gap-2.5"><span class="text-emerald-600">✓</span> <span data-i18n="det_am_3">Electric poles &amp; street lighting</span></li>
+              <li class="flex items-center gap-2.5"><span class="text-emerald-600">✓</span> <span data-i18n="det_am_4">Tree-lined avenues</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="px-6 py-5 border-t border-gray-100 bg-white">
+          <a id="dBookBtn" href="#contact" class="w-full bg-emerald-900 text-white py-3.5 rounded-lg font-bold text-sm hover:bg-emerald-800 transition flex items-center justify-center gap-2">
+            <span id="dBookBtnText" data-i18n="det_btn_enquire">Enquire About This Plot</span>
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+          </a>
+          <p class="text-center text-[11px] text-gray-400 mt-2.5" data-i18n="det_tax_note">Taxes and registration charges additional</p>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- ============ PLOT DIRECTORY ============ -->
+<section id="directory" class="bg-emerald-50/50 py-16 md:py-24 border-t border-emerald-100">
+  <div class="max-w-[1400px] mx-auto px-5 md:px-8">
+    <div class="max-w-2xl mb-8 reveal">
+      <span class="tag-chip uppercase text-emerald-700" data-i18n="dir_tag">Full Plot Directory</span>
+      <h2 class="font-display font-bold text-3xl md:text-4xl mt-2" data-i18n="dir_title">All 62 plots, at a glance.</h2>
+      <p class="text-slate-600 mt-3" data-i18n="dir_desc">Prefer a list over a map? Filter by facing direction or search a plot number — click any row to view it on the map above.</p>
+    </div>
+
+    <div class="flex flex-wrap gap-3 mb-5">
+      <input id="dirSearch" type="text" data-i18n="dir_search_ph" placeholder="Search plot no…" class="text-sm border border-gray-300 rounded-md px-3.5 py-2.5 w-40 focus:outline-none focus:ring-2 focus:ring-emerald-500"/>
+      <select id="dirFacing" class="text-sm border border-gray-300 rounded-md px-3.5 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        <option value="" data-i18n="dir_opt_all">All facing directions</option>
+      </select>
+      <select id="dirSort" class="text-sm border border-gray-300 rounded-md px-3.5 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        <option value="id" data-i18n="dir_opt_id">Sort: Plot No.</option>
+        <option value="area-asc" data-i18n="dir_opt_asc">Sort: Area (Low to High)</option>
+        <option value="area-desc" data-i18n="dir_opt_desc">Sort: Area (High to Low)</option>
+      </select>
+      <span class="ml-auto self-center text-sm text-slate-500" id="dirCount">62 plots</span>
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-200 shadow-soft overflow-hidden">
+      <div class="overflow-x-auto custom-scroll">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-900 text-white">
+            <tr>
+              <th class="text-left font-semibold px-4 py-3" data-i18n="th_plot">Plot No.</th>
+              <th class="text-left font-semibold px-4 py-3" data-i18n="th_sqm">Area (sqm)</th>
+              <th class="text-left font-semibold px-4 py-3" data-i18n="th_sqft">Area (sqft)</th>
+              <th class="text-left font-semibold px-4 py-3" data-i18n="th_facing">Facing</th>
+              <th class="text-left font-semibold px-4 py-3" data-i18n="th_status">Status</th>
+              <th class="text-left font-semibold px-4 py-3"></th>
+            </tr>
+          </thead>
+          <tbody id="dirTableBody" class="divide-y divide-gray-100"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DOWNLOADS ============ -->
+<section id="downloads" class="max-w-[1400px] mx-auto px-5 md:px-8 py-16 md:py-24">
+  <div class="grid md:grid-cols-2 gap-5">
+    <a href="assets/docs/Shivaji-Park-Brochure.pdf" download class="group flex items-center gap-5 bg-white border border-gray-200 rounded-xl p-6 shadow-soft hover:border-emerald-300 hover:shadow-lg transition reveal" onerror="this.href='Shivaji-Park-Brochure.pdf'">
+      <div class="w-14 h-14 rounded-lg bg-emerald-900 text-white flex items-center justify-center shrink-0">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4v12m0 0l-4-4m4 4l4-4M4 20h16"/></svg>
+      </div>
+      <div>
+        <p class="font-display font-bold text-slate-900 group-hover:text-emerald-700 transition" data-i18n="dl_pdf_title">Full Brochure (PDF)</p>
+        <p class="text-sm text-slate-500 mt-1" data-i18n="dl_pdf_desc">Complete layout plan with the official plot-wise area table.</p>
+      </div>
+    </a>
+    <a href="assets/images/layout-map.jpg" download class="group flex items-center gap-5 bg-white border border-gray-200 rounded-xl p-6 shadow-soft hover:border-emerald-300 hover:shadow-lg transition reveal" onerror="this.href='layout-map.png'">
+      <div class="w-14 h-14 rounded-lg bg-emerald-900 text-white flex items-center justify-center shrink-0">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 5h16v14H4V5zm4 10l3-4 2 2.5L16 9l4 6H8z"/><circle cx="8.5" cy="8.5" r="1.2"/></svg>
+      </div>
+      <div>
+        <p class="font-display font-bold text-slate-900 group-hover:text-emerald-700 transition" data-i18n="dl_img_title">Layout Map (Image)</p>
+        <p class="text-sm text-slate-500 mt-1" data-i18n="dl_img_desc">High-resolution version of the interactive plot map.</p>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- ============ CONTACT ============ -->
+<section id="contact" class="bg-emerald-900 text-white py-16 md:py-24">
+  <div class="max-w-[1400px] mx-auto px-5 md:px-8 grid lg:grid-cols-2 gap-12">
+    <div class="reveal">
+      <span class="tag-chip uppercase text-emerald-400" data-i18n="contact_tag">Get In Touch</span>
+      <h2 class="font-display font-bold text-3xl md:text-4xl mt-2 leading-tight" data-i18n="contact_title">'अशी गुंतवणूक ज्यामध्ये मिळेल उत्तम रिटर्न्स'</h2>
+      <p class="text-emerald-100/90 mt-4 max-w-md leading-relaxed" data-i18n="contact_desc">An investment that brings you the best returns. Reach out to the team directly for site visits, pricing and booking formalities.</p>
+      <div class="mt-7 bg-white/5 border border-white/10 rounded-xl p-5">
+        <p class="text-xs tag-chip uppercase text-emerald-300 mb-1" data-i18n="contact_address_tag">Layout Address</p>
+        <p class="text-sm leading-relaxed" data-i18n="contact_address">Behind Srushti Garden, Rahul Park, adjoining Gajanan Nagari, Manora, Dist. Washim</p>
+      </div>
+    </div>
+    <div class="grid sm:grid-cols-2 gap-4">
+      <a href="tel:+919423845411" class="reveal bg-white/5 hover:bg-white/10 transition border border-white/10 rounded-xl p-5 block">
+        <p class="font-display font-bold">Gopal Lahoti</p>
+        <p class="text-emerald-300 text-sm mt-1">+91 94238 45411</p>
+      </a>
+      <a href="tel:+919028713550" class="reveal bg-white/5 hover:bg-white/10 transition border border-white/10 rounded-xl p-5 block">
+        <p class="font-display font-bold">Prashant Dahake</p>
+        <p class="text-emerald-300 text-sm mt-1">+91 90287 13550</p>
+      </a>
+      <a href="tel:+918830319926" class="reveal bg-white/5 hover:bg-white/10 transition border border-white/10 rounded-xl p-5 block">
+        <p class="font-display font-bold">Sanket Olambe</p>
+        <p class="text-emerald-300 text-sm mt-1">+91 88303 19926</p>
+      </a>
+      <a href="tel:+919766613478" class="reveal bg-white/5 hover:bg-white/10 transition border border-white/10 rounded-xl p-5 block">
+        <p class="font-display font-bold">Ravindra Rathod</p>
+        <p class="text-emerald-300 text-sm mt-1">+91 97666 13478</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer class="bg-slate-900 text-slate-400 text-xs py-6">
+  <div class="max-w-[1400px] mx-auto px-5 md:px-8 flex flex-col sm:flex-row gap-2 items-center justify-between">
+    <p data-i18n="footer_rights">© 2026 Shivaji Park Residential. All rights reserved.</p>
+    <p data-i18n="footer_site">Site: Gut No. 102, Mouze Somtana, Tq. Manora, Dist. Washim</p>
+  </div>
+</footer>
+
+<!-- ============ TRANSLATION DICTIONARY ============ -->
+<script>
+const translations = {
+  en: {
+    header_title_mr: "शिवाजी पार्क", header_title_en: "| SHIVAJI PARK",
+    header_subtitle: "RESIDENTIAL LAYOUT · MOUZE SOMTANA, MANORA, DIST. WASHIM",
+    nav_overview: "Overview", nav_amenities: "Amenities", nav_map: "Inventory Map",
+    nav_directory: "Plot Directory", nav_downloads: "Downloads", nav_contact: "Contact",
+    contact_sales: "Contact Sales",
+    hero_badge: "Town Planning Approved Layout · Booking Open",
+    hero_title_1: "Own a plot that", hero_title_2: "grows with", hero_title_3: "Manora.",
+    hero_desc: "62 residential plots laid out across Gut No. 102, Mouze Somtana — wide concrete roads, dedicated open spaces and an amenity plot, just behind Srushti Garden, next to Rahul Park, Manora.",
+    hero_btn_map: "Explore the Plot Map", hero_btn_list: "Browse Plot List",
+    hero_stat_1: "Total Plots", hero_stat_2: "Amenity Space", hero_stat_3: "Open Spaces (2)",
+    hero_float_1: "RERA Approved Layout", hero_float_2: "Town Planning Sanctioned",
+    ov_tag: "Project Overview", ov_title: "A layout planned for everyday living, not just investment.",
+    ov_p1: "Shivaji Park sits within Gut No. 102 of Mouze Somtana, Taluka Manora, District Washim — a quiet, well-connected pocket close to Shivaji Chowk and the Mangrul–Manora road. The layout is town-planning approved, with 30 ft. and 40 ft. wide roads, concrete storm-water drains and tree-lined avenues running through every street.",
+    ov_p2: "Every plot has been surveyed and tabulated individually — net area, road frontage and orientation are all on record, so what you see on the map is what gets registered in your name.",
+    ov_box1_title: "Open Space — 1,152.84 m²", ov_box1_desc: "Landscaped green next to plots 53–62, with planned tree plantation.",
+    ov_box2_title: "Open Space — 569.93 m²", ov_box2_desc: "Second green pocket beside plots 20 & 31, central to the layout.",
+    ov_box3_title: "Amenity Plot — 1,721.22 m²", ov_box3_desc: "Reserved community amenity space along the western edge.",
+    ov_box4_title: "Roads — 9 m & 12 m wide", ov_box4_desc: "Every internal road is concrete, lit and tree-lined on both sides.",
+    nearby_title: "What's nearby", nearby_desc: "Landmarks referenced on the official location map",
+    nb_1: "Shivaji Chowk", nb_1_tag: "On the layout road",
+    nb_2: "Rahul Park", nb_2_tag: "Adjoining the site",
+    nb_3: "Srushti Garden", nb_3_tag: "Directly behind layout",
+    nb_4: "Gajanan Nagari", nb_4_tag: "Adjoining locality",
+    nb_5: "Pratik Primary School", nb_5_tag: "Nearby",
+    nb_6: "Gyanpeeth College", nb_6_tag: "Nearby",
+    nb_7: "Somtana Chowk & Mangrul–Manora Road", nb_7_tag: "Connecting route",
+    nb_footer: "Location references are reproduced from the official layout brochure. Distances are indicative — please verify on-ground before purchase.",
+    am_tag: "Project Amenities", am_title: "Built around the basics, done properly.",
+    am_1_title: "Town Planning Approved", am_1_desc: "The complete layout carries Town Planning sanction, keeping your registration process clean.",
+    am_2_title: "30 ft. & 40 ft. Wide Roads", am_2_desc: "Generous internal roads for comfortable traffic flow and future-ready access.",
+    am_3_title: "Concrete Storm-Water Drains", am_3_desc: "Cement-concrete drainage along the roads to keep the layout monsoon-ready.",
+    am_4_title: "Electric Poles & Street Lights", am_4_desc: "Well-lit roads across the layout for safer evenings.",
+    am_5_title: "Tree Plantation Throughout", am_5_desc: "Both open spaces and every road edge are planned for avenue plantation.",
+    am_6_title: "Established Neighbourhood", am_6_desc: "Located right next to an already settled, lived-in residential pocket.",
+    map_tag: "Interactive Inventory Map", map_title: "Click any plot to see its details.",
+    map_desc: "Tap a plot on the layout below — its area, road frontage, facing direction and Vastu notes will appear instantly. Use the search box to jump straight to a plot number.",
+    search_placeholder: "Jump to plot no. e.g. 27", map_reset: "Reset",
+    status_available: "Available", status_reserved: "Reserved", status_sold: "Sold",
+    det_empty_title: "Select a plot on the map", det_empty_desc: "Its area, dimensions, facing and Vastu notes will show up here.",
+    det_tag: "Inventory Details", det_plot_prefix: "Plot",
+    det_spec_title: "Area Specifications", det_area_sqm: "Net Area (sqm)", det_area_sqft: "Net Area (sqft)",
+    det_dims: "Plot dimensions", det_ded: "Curvature deduction",
+    det_vastu_header: "Direction & Vastu", det_vastu_disclaimer: "Facing direction is indicative, based on the layout's orientation on the approved plan. Please confirm exact direction with the site engineer before finalising.",
+    det_am_title: "Project Amenities", det_am_1: "Town planning approved layout", det_am_2: "30 ft. & 40 ft. wide concrete roads",
+    det_am_3: "Electric poles & street lighting", det_am_4: "Tree-lined avenues",
+    det_btn_enquire: "Enquire About This Plot", det_tax_note: "Taxes and registration charges additional",
+    dir_tag: "Full Plot Directory", dir_title: "All 62 plots, at a glance.", dir_desc: "Prefer a list over a map? Filter by facing direction or search a plot number — click any row to view it on the map above.",
+    dir_search_ph: "Search plot no…", dir_opt_all: "All facing directions",
+    dir_opt_id: "Sort: Plot No.", dir_opt_asc: "Sort: Area (Low to High)", dir_opt_desc: "Sort: Area (High to Low)",
+    th_plot: "Plot No.", th_sqm: "Area (sqm)", th_sqft: "Area (sqft)", th_facing: "Facing", th_status: "Status",
+    dl_pdf_title: "Full Brochure (PDF)", dl_pdf_desc: "Complete layout plan with the official plot-wise area table.",
+    dl_img_title: "Layout Map (Image)", dl_img_desc: "High-resolution version of the interactive plot map.",
+    contact_tag: "Get In Touch", contact_title: "'अशी गुंतवणूक ज्यामध्ये मिळेल उत्तम रिटर्न्स'",
+    contact_desc: "An investment that brings you the best returns. Reach out to the team directly for site visits, pricing and booking formalities.",
+    contact_address_tag: "Layout Address", contact_address: "Behind Srushti Garden, Rahul Park, adjoining Gajanan Nagari, Manora, Dist. Washim",
+    footer_rights: "© 2026 Shivaji Park Residential. All rights reserved.", footer_site: "Site: Gut No. 102, Mouze Somtana, Tq. Manora, Dist. Washim",
+    vastu_title_north: "North Facing (Uttar)", vastu_title_east: "East Facing (Purva)", vastu_title_west: "West Facing (Paschim)",
+    vastu_title_south: "South Facing (Dakshin)", vastu_title_north_east: "North-East Facing (Ishanya)", vastu_title_north_west: "North-West Facing (Vayavya)",
+    vastu_title_south_west: "South-West Facing (Nairutya)",
+    vastu_note_north: "North-facing plots are ruled by Kuber, the deity of wealth, and are traditionally considered favourable for steady prosperity and cash flow.",
+    vastu_note_east: "East-facing plots receive the first light of the rising sun, symbolising new beginnings, health and positive energy.",
+    vastu_note_west: "West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice.",
+    vastu_note_south: "South-facing plots can be equally prosperous when the entrance and internal layout are planned correctly.",
+    vastu_note_north_east: "The North-East corner is regarded as the most auspicious direction in Vastu Shastra, associated with spiritual energy, clarity and growth.",
+    vastu_note_north_west: "Linked to movement and support of relationships, North-West facing plots are considered favourable for guest areas.",
+    vastu_note_south_west: "South-West is associated with stability and strength, and is traditionally favoured for the master bedroom.",
+    plot_irregular: "Irregular — see map",
+    plot_view: "View on map →"
+  },
+  
+  hi: {
+    header_title_mr: "शिवाजी पार्क", header_title_en: "| SHIVAJI PARK",
+    header_subtitle: "आवासीय लेआउट · मौजे सोमथाना, मानोरा, जिला वाशिम",
+    nav_overview: "अवलोकन", nav_amenities: "सुविधाएं", nav_map: "इन्वेंटरी मैप",
+    nav_directory: "प्लॉट निर्देशिका", nav_downloads: "डाउनलोड", nav_contact: "संपर्क",
+    contact_sales: "सेल्स से संपर्क करें",
+    hero_badge: "टाउन प्लानिंग स्वीकृत लेआउट · बुकिंग शुरू",
+    hero_title_1: "एक ऐसा प्लॉट अपनाएं जो", hero_title_2: "मनोरा के साथ", hero_title_3: "बढ़े।",
+    hero_desc: "गट नं. 102, मौजे सोमथाना में 62 आवासीय प्लॉट - चौड़ी कंक्रीट सड़कें, खुली जगहें, सृष्टि गार्डन के ठीक पीछे, राहुल पार्क, मानोरा के बगल में।",
+    hero_btn_map: "प्लॉट मैप देखें", hero_btn_list: "प्लॉट सूची ब्राउज़ करें",
+    hero_stat_1: "कुल प्लॉट", hero_stat_2: "सुविधा क्षेत्र", hero_stat_3: "खुली जगह (2)",
+    hero_float_1: "रेरा स्वीकृत लेआउट", hero_float_2: "टाउन प्लानिंग स्वीकृत",
+    ov_tag: "प्रोजेक्ट अवलोकन", ov_title: "सिर्फ निवेश नहीं, हर दिन के जीवन के लिए बनाया गया लेआउट।",
+    ov_p1: "शिवाजी पार्क गट नं. 102, मौजे सोमथाना, तालुका मानोरा, जिला वाशिम में स्थित है — शिवाजी चौक और मंगरुल-मानोरा रोड के करीब। लेआउट टाउन-प्लानिंग स्वीकृत है, जिसमें 30 और 40 फीट चौड़ी सड़कें, कंक्रीट की नालियां और पेड़ों से घिरी सड़कें हैं।",
+    ov_p2: "प्रत्येक प्लॉट का व्यक्तिगत रूप से सर्वेक्षण किया गया है - जो आप मैप पर देखते हैं, वही आपके नाम पर पंजीकृत होता है।",
+    ov_box1_title: "खुली जगह — 1,152.84 वर्ग मीटर", ov_box1_desc: "प्लॉट 53-62 के पास हरियाली, नियोजित वृक्षारोपण के साथ।",
+    ov_box2_title: "खुली जगह — 569.93 वर्ग मीटर", ov_box2_desc: "लेआउट के केंद्र में प्लॉट 20 और 31 के पास दूसरा हरा-भरा क्षेत्र।",
+    ov_box3_title: "सुविधा प्लॉट — 1,721.22 वर्ग मीटर", ov_box3_desc: "पश्चिमी छोर पर आरक्षित सामुदायिक सुविधा स्थान।",
+    ov_box4_title: "सड़कें — 9 मीटर और 12 मीटर चौड़ी", ov_box4_desc: "हर आंतरिक सड़क कंक्रीट की है, और दोनों तरफ पेड़ लगाए गए हैं।",
+    nearby_title: "आस-पास क्या है", nearby_desc: "आधिकारिक स्थान मानचित्र पर संदर्भित स्थल",
+    nb_1: "शिवाजी चौक", nb_1_tag: "लेआउट रोड पर",
+    nb_2: "राहुल पार्क", nb_2_tag: "साइट से सटा हुआ",
+    nb_3: "सृष्टि गार्डन", nb_3_tag: "लेआउट के ठीक पीछे",
+    nb_4: "गजानन नगरी", nb_4_tag: "सटा हुआ इलाका",
+    nb_5: "प्रतीक प्राथमिक विद्यालय", nb_5_tag: "निकट",
+    nb_6: "ज्ञानपीठ कॉलेज", nb_6_tag: "निकट",
+    nb_7: "सोमथाना चौक और मंगरुल-मानोरा रोड", nb_7_tag: "जोड़ने वाला मार्ग",
+    nb_footer: "स्थान संदर्भ आधिकारिक ब्रोशर से लिए गए हैं। दूरियां सांकेतिक हैं - कृपया खरीदने से पहले जांच लें।",
+    am_tag: "प्रोजेक्ट की सुविधाएं", am_title: "बुनियादी जरूरतों को सही ढंग से बनाया गया।",
+    am_1_title: "टाउन प्लानिंग स्वीकृत", am_1_desc: "संपूर्ण लेआउट को टाउन प्लानिंग की मंजूरी प्राप्त है।",
+    am_2_title: "30 फीट और 40 फीट चौड़ी सड़कें", am_2_desc: "आरामदायक यातायात के लिए बड़ी आंतरिक सड़कें।",
+    am_3_title: "कंक्रीट स्टॉर्म-वाटर ड्रेन", am_3_desc: "सड़कों के किनारे सीमेंट-कंक्रीट की नालियां।",
+    am_4_title: "इलेक्ट्रिक पोल और स्ट्रीट लाइट", am_4_desc: "सुरक्षित शाम के लिए पूरे लेआउट में अच्छी रोशनी।",
+    am_5_title: "चारों ओर वृक्षारोपण", am_5_desc: "खुली जगहों और सड़क के किनारों पर पेड़ लगाने की योजना।",
+    am_6_title: "बसा हुआ पड़ोस", am_6_desc: "पहले से बसे हुए आवासीय क्षेत्र के ठीक बगल में स्थित है।",
+    map_tag: "इन्वेंटरी मैप", map_title: "विवरण देखने के लिए किसी भी प्लॉट पर क्लिक करें।",
+    map_desc: "नीचे लेआउट पर किसी प्लॉट पर टैप करें — उसका क्षेत्रफल, सड़क का हिस्सा, दिशा और वास्तु संबंधी जानकारी तुरंत दिखाई देगी।",
+    search_placeholder: "प्लॉट नंबर खोजें उदा. 27", map_reset: "रीसेट",
+    status_available: "उपलब्ध", status_reserved: "आरक्षित", status_sold: "बिक गया",
+    det_empty_title: "मैप पर एक प्लॉट चुनें", det_empty_desc: "इसका क्षेत्रफल, आयाम, दिशा और वास्तु नोट्स यहां दिखाई देंगे।",
+    det_tag: "इन्वेंटरी विवरण", det_plot_prefix: "प्लॉट",
+    det_spec_title: "क्षेत्रफल विशेष विवरण", det_area_sqm: "शुद्ध क्षेत्रफल (वर्ग मीटर)", det_area_sqft: "शुद्ध क्षेत्रफल (वर्ग फुट)",
+    det_dims: "प्लॉट के आयाम", det_ded: "वक्रता कटौती (Curvature)",
+    det_vastu_header: "दिशा और वास्तु", det_vastu_disclaimer: "दिशा सांकेतिक है। अंतिम रूप देने से पहले कृपया साइट इंजीनियर से दिशा की पुष्टि करें।",
+    det_am_title: "प्रोजेक्ट की सुविधाएं", det_am_1: "टाउन प्लानिंग स्वीकृत लेआउट", det_am_2: "30 फीट और 40 फीट चौड़ी कंक्रीट की सड़कें",
+    det_am_3: "इलेक्ट्रिक पोल और स्ट्रीट लाइटिंग", det_am_4: "पेड़ों से घिरे रास्ते",
+    det_btn_enquire: "इस प्लॉट के बारे में पूछताछ करें", det_tax_note: "कर और पंजीकरण शुल्क अतिरिक्त",
+    dir_tag: "पूर्ण प्लॉट निर्देशिका", dir_title: "सभी 62 प्लॉट, एक नज़र में।", dir_desc: "दिशा के अनुसार फ़िल्टर करें या प्लॉट नंबर खोजें — ऊपर मैप पर देखने के लिए किसी भी पंक्ति पर क्लिक करें।",
+    dir_search_ph: "प्लॉट नंबर खोजें…", dir_opt_all: "सभी दिशाएँ",
+    dir_opt_id: "क्रमबद्ध: प्लॉट नं.", dir_opt_asc: "क्रमबद्ध: क्षेत्रफल (कम से अधिक)", dir_opt_desc: "क्रमबद्ध: क्षेत्रफल (अधिक से कम)",
+    th_plot: "प्लॉट नं.", th_sqm: "क्षेत्रफल (वर्ग मीटर)", th_sqft: "क्षेत्रफल (वर्ग फुट)", th_facing: "दिशा", th_status: "स्थिति",
+    dl_pdf_title: "पूर्ण ब्रोशर (PDF)", dl_pdf_desc: "प्लॉट-वार क्षेत्र तालिका के साथ पूर्ण लेआउट योजना।",
+    dl_img_title: "लेआउट मैप (Image)", dl_img_desc: "इन्टेरेक्टिव प्लॉट मैप का हाई-रिज़ॉल्यूशन वर्ज़न।",
+    contact_tag: "संपर्क करें", contact_title: "'अशी गुंतवणूक ज्यामध्ये मिळेल उत्तम रिटर्न्स'",
+    contact_desc: "एक निवेश जो आपको बेहतरीन रिटर्न देता है। साइट विजिट और बुकिंग औपचारिकताओं के लिए सीधे टीम से संपर्क करें।",
+    contact_address_tag: "लेआउट का पता", contact_address: "सृष्टि गार्डन के पीछे, राहुल पार्क, गजानन नगरी से सटा हुआ, मानोरा, जिला वाशिम",
+    footer_rights: "© 2026 शिवाजी पार्क आवासीय। सर्वाधिकार सुरक्षित।", footer_site: "साइट: गट नं. 102, मौजे सोमथाना, तालुका मानोरा, जिला वाशिम",
+    vastu_title_north: "उत्तर मुखी (उत्तर)", vastu_title_east: "पूर्व मुखी (पूर्व)", vastu_title_west: "पश्चिम मुखी (पश्चिम)",
+    vastu_title_south: "दक्षिण मुखी (दक्षिण)", vastu_title_north_east: "ईशान कोण (उत्तर-पूर्व)", vastu_title_north_west: "वायव्य कोण (उत्तर-पश्चिम)",
+    vastu_title_south_west: "नैऋत्य कोण (दक्षिण-पश्चिम)",
+    vastu_note_north: "उत्तर मुखी भूखंडों पर धन के देवता कुबेर का शासन होता है। यह निरंतर समृद्धि और धन प्रवाह के लिए शुभ माना जाता है।",
+    vastu_note_east: "पूर्व मुखी भूखंडों पर उगते सूरज की पहली किरण पड़ती है, जो नई शुरुआत, स्वास्थ्य और सकारात्मक ऊर्जा का प्रतीक है।",
+    vastu_note_west: "पश्चिम मुखी भूखंड दीर्घकालिक धन संचय और स्थिरता से जुड़े हैं, और यह निवेशकों की लोकप्रिय पसंद है।",
+    vastu_note_south: "दक्षिण मुखी भूखंड भी उतने ही समृद्ध हो सकते हैं यदि प्रवेश द्वार और आंतरिक लेआउट सही ढंग से योजनाबद्ध हो।",
+    vastu_note_north_east: "वास्तु शास्त्र में उत्तर-पूर्व (ईशान) कोने को सबसे शुभ दिशा माना जाता है, जो आध्यात्मिक ऊर्जा और विकास से जुड़ी है।",
+    vastu_note_north_west: "वायव्य कोण रिश्तों और आवागमन से जुड़ा है, इसे अतिथि कक्ष (गेस्ट एरिया) के लिए अनुकूल माना जाता है।",
+    vastu_note_south_west: "नैऋत्य कोण स्थिरता और शक्ति से जुड़ा है, और पारंपरिक रूप से मास्टर बेडरूम के लिए सबसे अच्छा माना जाता है।",
+    plot_irregular: "अनियमित — मैप देखें",
+    plot_view: "मैप पर देखें →"
+  },
+  
+  mr: {
+    header_title_mr: "शिवाजी पार्क", header_title_en: "| SHIVAJI PARK",
+    header_subtitle: "निवासी लेआऊट · मौजे सोमठाणा, मानोरा, जि. वाशिम",
+    nav_overview: "आढावा", nav_amenities: "सुविधा", nav_map: "इन्व्हेंटरी नकाशा",
+    nav_directory: "प्लॉट निर्देशिका", nav_downloads: "डाउनलोड", nav_contact: "संपर्क",
+    contact_sales: "सेल्सशी संपर्क साधा",
+    hero_badge: "टाऊन प्लॅनिंग मान्यता प्राप्त लेआऊट · बुकिंग सुरू",
+    hero_title_1: "असा प्लॉट घ्या जो", hero_title_2: "मानोरा सोबत", hero_title_3: "वाढेल.",
+    hero_desc: "गट नं. 102, मौजे सोमठाणा येथे 62 निवासी प्लॉट्स — रुंद काँक्रीटचे रस्ते, ओपन स्पेस, सृष्टी गार्डनच्या मागे, राहुल पार्कच्या बाजूला, मानोरा.",
+    hero_btn_map: "प्लॉट नकाशा एक्सप्लोर करा", hero_btn_list: "प्लॉट यादी ब्राउझ करा",
+    hero_stat_1: "एकूण प्लॉट्स", hero_stat_2: "सुविधा क्षेत्र", hero_stat_3: "ओपन स्पेस (2)",
+    hero_float_1: "रेरा मान्यता प्राप्त लेआऊट", hero_float_2: "टाऊन प्लॅनिंग मंजूर",
+    ov_tag: "प्रोजेक्टचा आढावा", ov_title: "केवळ गुंतवणुकीसाठी नाही, तर रोजच्या जीवनासाठी बनवलेला लेआऊट.",
+    ov_p1: "शिवाजी पार्क गट नं. 102, मौजे सोमठाणा, तालुका मानोरा, जि. वाशिम येथे स्थित आहे — शिवाजी चौक आणि मंगरुळ-मानोरा रोडच्या जवळ. लेआऊट टाऊन-प्लॅनिंग मंजूर आहे, ज्यामध्ये 30 आणि 40 फुटांचे रुंद रस्ते, काँक्रीटच्या नाल्या आणि रस्त्यांच्या कडेला वृक्षारोपण आहे.",
+    ov_p2: "प्रत्येक प्लॉटचे सर्वेक्षण केले गेले आहे — जे तुम्हाला नकाशावर दिसते, तेच तुमच्या नावावर नोंदणीकृत होते.",
+    ov_box1_title: "ओपन स्पेस — 1,152.84 चौ. मी.", ov_box1_desc: "प्लॉट 53-62 च्या शेजारील हिरवळ, वृक्षारोपणासह.",
+    ov_box2_title: "ओपन स्पेस — 569.93 चौ. मी.", ov_box2_desc: "प्लॉट 20 आणि 31 च्या बाजूला, लेआऊटच्या मध्यभागी.",
+    ov_box3_title: "सुविधा प्लॉट — 1,721.22 चौ. मी.", ov_box3_desc: "पश्चिम बाजूला राखीव समुदाय सुविधा जागा.",
+    ov_box4_title: "रस्ते — 9 मी. आणि 12 मी. रुंद", ov_box4_desc: "प्रत्येक रस्ता काँक्रीटचा असून दोन्ही बाजूंना वृक्षारोपण आणि लाईट्स आहेत.",
+    nearby_title: "आसपास काय आहे", nearby_desc: "अधिकृत नकाशावर संदर्भित खुणा",
+    nb_1: "शिवाजी चौक", nb_1_tag: "लेआऊट रोडवर",
+    nb_2: "राहुल पार्क", nb_2_tag: "साइटला लागून",
+    nb_3: "सृष्टी गार्डन", nb_3_tag: "लेआऊटच्या अगदी मागे",
+    nb_4: "गजानन नगरी", nb_4_tag: "लागूनच असलेला परिसर",
+    nb_5: "प्रतीक प्राथमिक शाळा", nb_5_tag: "जवळच",
+    nb_6: "ज्ञानपीठ कॉलेज", nb_6_tag: "जवळच",
+    nb_7: "सोमठाणा चौक आणि मंगरुळ-मानोरा रोड", nb_7_tag: "जोडणारा रस्ता",
+    nb_footer: "स्थान संदर्भ अधिकृत ब्रोशरमधून घेतले आहेत. खरेदी करण्यापूर्वी कृपया साईटवर खात्री करा.",
+    am_tag: "प्रोजेक्टमधील सुविधा", am_title: "पायाभूत गरजा ओळखून योग्य पद्धतीने बनवलेले.",
+    am_1_title: "टाऊन प्लॅनिंग मान्यता प्राप्त", am_1_desc: "संपूर्ण लेआऊटला टाऊन प्लॅनिंगची मान्यता आहे.",
+    am_2_title: "30 फु. आणि 40 फु. रुंद रस्ते", am_2_desc: "वाहतुकीसाठी प्रशस्त अंतर्गत रस्ते.",
+    am_3_title: "काँक्रीटच्या पक्क्या नाल्या", am_3_desc: "पावसाळ्यासाठी रस्त्यांच्या बाजूने काँक्रीटची ड्रेनेज व्यवस्था.",
+    am_4_title: "इलेक्ट्रिक पोल आणि स्ट्रीट लाईट्स", am_4_desc: "सुरक्षिततेसाठी संपूर्ण लेआऊटमध्ये चांगली प्रकाशयोजना.",
+    am_5_title: "संपूर्ण परिसरात वृक्षारोपण", am_5_desc: "ओपन स्पेस आणि प्रत्येक रस्त्याच्या कडेने वृक्षारोपण.",
+    am_6_title: "गजबजलेला वस्तीला लागून", am_6_desc: "आधीपासूनच वस्ती असलेल्या निवासी क्षेत्राच्या अगदी शेजारी.",
+    map_tag: "इन्व्हेंटरी नकाशा", map_title: "तपशील पाहण्यासाठी कोणत्याही प्लॉटवर क्लिक करा.",
+    map_desc: "खालील लेआऊटवरील प्लॉटवर टॅप करा — त्याचे क्षेत्रफळ, रस्त्याची बाजू, दिशा आणि वास्तू माहिती त्वरित दिसेल.",
+    search_placeholder: "प्लॉट क्र. शोधा उदा. 27", map_reset: "रीसेट",
+    status_available: "उपलब्ध", status_reserved: "राखीव", status_sold: "विक्री झाली",
+    det_empty_title: "नकाशावर एक प्लॉट निवडा", det_empty_desc: "त्याचे क्षेत्रफळ, मोजमाप, दिशा आणि वास्तू माहिती येथे दिसेल.",
+    det_tag: "इन्व्हेंटरी तपशील", det_plot_prefix: "प्लॉट",
+    det_spec_title: "क्षेत्रफळ तपशील", det_area_sqm: "एकूण क्षेत्र (चौ. मी.)", det_area_sqft: "एकूण क्षेत्र (चौ. फूट)",
+    det_dims: "प्लॉटचे मोजमाप", det_ded: "वक्रता कपात (Curvature)",
+    det_vastu_header: "दिशा आणि वास्तू", det_vastu_disclaimer: "दिशा सूचक आहे. अंतिम निर्णय घेण्यापूर्वी कृपया साईट इंजिनीअरकडून दिशा निश्चित करा.",
+    det_am_title: "प्रोजेक्ट सुविधा", det_am_1: "टाऊन प्लॅनिंग मान्यता प्राप्त लेआऊट", det_am_2: "30 फु. आणि 40 फु. रुंद काँक्रीटचे रस्ते",
+    det_am_3: "इलेक्ट्रिक पोल आणि स्ट्रीट लाईटिंग", det_am_4: "रस्त्यांच्या दोन्ही बाजूंनी वृक्षारोपण",
+    det_btn_enquire: "या प्लॉटबद्दल चौकशी करा", det_tax_note: "कर आणि नोंदणी शुल्क अतिरिक्त",
+    dir_tag: "संपूर्ण प्लॉट निर्देशिका", dir_title: "सर्व 62 प्लॉट्स, एका दृष्टिक्षेपात.", dir_desc: "दिशेनुसार फिल्टर करा किंवा प्लॉट क्रमांक शोधा — नकाशावर पाहण्यासाठी कोणत्याही ओळीवर क्लिक करा.",
+    dir_search_ph: "प्लॉट क्र. शोधा…", dir_opt_all: "सर्व दिशा",
+    dir_opt_id: "क्रमवारी: प्लॉट क्र.", dir_opt_asc: "क्रमवारी: क्षेत्रफळ (कमी ते जास्त)", dir_opt_desc: "क्रमवारी: क्षेत्रफळ (जास्त ते कमी)",
+    th_plot: "प्लॉट क्र.", th_sqm: "क्षेत्र (चौ. मी.)", th_sqft: "क्षेत्र (चौ. फूट)", th_facing: "दिशा", th_status: "स्थिती",
+    dl_pdf_title: "संपूर्ण ब्रोशर (PDF)", dl_pdf_desc: "प्लॉट-निहाय क्षेत्र तक्त्यासह संपूर्ण लेआऊट प्लॅन.",
+    dl_img_title: "लेआऊट नकाशा (Image)", dl_img_desc: "इंटरेक्टिव्ह प्लॉट नकाशाची हाय-रिझोल्यूशन आवृत्ती.",
+    contact_tag: "संपर्क साधा", contact_title: "'अशी गुंतवणूक ज्यामध्ये मिळेल उत्तम रिटर्न्स'",
+    contact_desc: "गुंतवणूक जी तुम्हाला सर्वोत्तम परतावा देईल. साईट व्हिजिट आणि बुकिंगसाठी थेट टीमशी संपर्क साधा.",
+    contact_address_tag: "लेआऊटचा पत्ता", contact_address: "सृष्टी गार्डनच्या मागे, राहुल पार्क, गजानन नगरीला लागून, मानोरा, जि. वाशिम",
+    footer_rights: "© 2026 शिवाजी पार्क रेसिडेन्शिअल. सर्व हक्क राखीव.", footer_site: "साईट: गट नं. 102, मौजे सोमठाणा, ता. मानोरा, जि. वाशिम",
+    vastu_title_north: "उत्तर मुखी (उत्तर)", vastu_title_east: "पूर्व मुखी (पूर्व)", vastu_title_west: "पश्चिम मुखी (पश्चिम)",
+    vastu_title_south: "दक्षिण मुखी (दक्षिण)", vastu_title_north_east: "ईशान्य मुखी (उत्तर-पूर्व)", vastu_title_north_west: "वायव्य मुखी (उत्तर-पश्चिम)",
+    vastu_title_south_west: "नैऋत्य मुखी (दक्षिण-पश्चिम)",
+    vastu_note_north: "उत्तर मुखी प्लॉट्सवर धनाचा देव कुबेर याचे राज्य असते. स्थिर समृद्धी आणि रोख प्रवाहासाठी हे अत्यंत अनुकूल मानले जाते.",
+    vastu_note_east: "पूर्व मुखी प्लॉट्सवर उगवत्या सूर्याची पहिली किरण पडते, जे नवीन सुरुवात, आरोग्य आणि सकारात्मक ऊर्जेचे प्रतीक आहे.",
+    vastu_note_west: "पश्चिम मुखी प्लॉट्स दीर्घकालीन संपत्ती संचय आणि स्थिरतेशी जोडलेले आहेत, आणि गुंतवणूकदारांची ही पसंतीची निवड असते.",
+    vastu_note_south: "प्रवेशद्वार आणि अंतर्गत रचना योग्य असल्यास दक्षिण मुखी प्लॉट्स देखील तितकेच समृद्ध आणि फलदायी ठरू शकतात.",
+    vastu_note_north_east: "वास्तू शास्त्रानुसार ईशान्य दिशा सर्वात शुभ मानली जाते, जी आध्यात्मिक ऊर्जा, स्पष्टता आणि प्रगतीशी जोडलेली आहे.",
+    vastu_note_north_west: "वायव्य दिशा नातेसंबंध आणि हालचालींना समर्थन देते, म्हणून गेस्ट एरिया (पाहुण्यांसाठी) हे प्लॉट्स अनुकूल मानले जातात.",
+    vastu_note_south_west: "नैऋत्य दिशा स्थिरता आणि सामर्थ्याशी जोडलेली आहे, आणि पारंपारिकपणे मास्टर बेडरूमसाठी सर्वात उत्तम मानली जाते.",
+    plot_irregular: "अनियमित — नकाशा पहा",
+    plot_view: "नकाशावर पहा →"
+  }
+};
+let currentLang = 'en';
+</script>
+
+<!-- ============ PLOTS JSON DATA ============ -->
+<script id="plotsData" type="application/json">
+[{"id":1,"width":null,"length":null,"area":230.65,"deduction":0,"netSqm":230.65,"netSqft":2482.72,"isCorner":false,"facing":"North","vastuTitle":"North Facing (Uttar)","vastuNote":"North-facing plots are ruled by Kuber, the deity of wealth, and are traditionally considered favourable for steady prosperity and cash flow. Many buyers prefer keeping the main entrance on this side.","left":82.05,"top":17.66,"width_pct":10.05,"height_pct":15.24,"status":"Available"},{"id":2,"width":null,"length":null,"area":223.46,"deduction":4.35,"netSqm":219.11,"netSqft":2358.5,"isCorner":true,"facing":"North-West","vastuTitle":"North-West Facing (Vayavya)","vastuNote":"Linked to movement and support of relationships, North-West facing plots are considered favourable for guest areas and are valued for good air circulation.","left":75.64,"top":22.79,"width_pct":7.22,"height_pct":7.98,"status":"Available"},{"id":3,"width":null,"length":null,"area":159.18,"deduction":0,"netSqm":159.18,"netSqft":1713.41,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":75.3,"top":30.48,"width_pct":7.89,"height_pct":6.55,"status":"Available"},{"id":4,"width":null,"length":null,"area":144.23,"deduction":0,"netSqm":144.23,"netSqft":1552.49,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":74.43,"top":36.47,"width_pct":6.28,"height_pct":11.82,"status":"Available"},{"id":5,"width":null,"length":null,"area":295.39,"deduction":0,"netSqm":295.39,"netSqft":3179.58,"isCorner":false,"facing":"East","vastuTitle":"East Facing (Purva)","vastuNote":"East-facing plots receive the first light of the rising sun, symbolising new beginnings, health and positive energy. A classic, widely preferred orientation for residential plots.","left":60.73,"top":49.86,"width_pct":9.58,"height_pct":12.82,"status":"Available"},{"id":6,"width":7.9,"length":17.0,"area":134.3,"deduction":0,"netSqm":134.3,"netSqft":1445.61,"isCorner":false,"facing":"East","vastuTitle":"East Facing (Purva)","vastuNote":"East-facing plots receive the first light of the rising sun, symbolising new beginnings, health and positive energy. A classic, widely preferred orientation for residential plots.","left":63.97,"top":44.44,"width_pct":6.68,"height_pct":6.13,"status":"Available"},{"id":7,"width":7.9,"length":17.0,"area":134.3,"deduction":0,"netSqm":134.3,"netSqft":1445.61,"isCorner":false,"facing":"East","vastuTitle":"East Facing (Purva)","vastuNote":"East-facing plots receive the first light of the rising sun, symbolising new beginnings, health and positive energy. A classic, widely preferred orientation for residential plots.","left":64.3,"top":39.03,"width_pct":6.68,"height_pct":6.27,"status":"Available"},{"id":8,"width":7.9,"length":17.0,"area":134.3,"deduction":0,"netSqm":134.3,"netSqft":1445.61,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":64.64,"top":33.62,"width_pct":6.68,"height_pct":6.27,"status":"Available"},{"id":9,"width":null,"length":null,"area":159.07,"deduction":4.35,"netSqm":154.72,"netSqft":1665.41,"isCorner":true,"facing":"East","vastuTitle":"East Facing (Purva)","vastuNote":"East-facing plots receive the first light of the rising sun, symbolising new beginnings, health and positive energy. A classic, widely preferred orientation for residential plots.","left":68.08,"top":22.51,"width_pct":4.05,"height_pct":11.97,"status":"Available"},{"id":10,"width":null,"length":null,"area":135.51,"deduction":0,"netSqm":135.51,"netSqft":1458.63,"isCorner":false,"facing":"North","vastuTitle":"North Facing (Uttar)","vastuNote":"North-facing plots are ruled by Kuber, the deity of wealth, and are traditionally considered favourable for steady prosperity and cash flow. Many buyers prefer keeping the main entrance on this side.","left":64.98,"top":22.22,"width_pct":3.58,"height_pct":11.68,"status":"Available"},{"id":11,"width":null,"length":null,"area":132.87,"deduction":0,"netSqm":132.87,"netSqft":1430.21,"isCorner":false,"facing":"North","vastuTitle":"North Facing (Uttar)","vastuNote":"North-facing plots are ruled by Kuber, the deity of wealth, and are traditionally considered favourable for steady prosperity and cash flow. Many buyers prefer keeping the main entrance on this side.","left":61.88,"top":21.94,"width_pct":3.58,"height_pct":11.25,"status":"Available"},{"id":12,"width":null,"length":null,"area":146.36,"deduction":4.35,"netSqm":142.01,"netSqft":1528.6,"isCorner":true,"facing":"North-West","vastuTitle":"North-West Facing (Vayavya)","vastuNote":"Linked to movement and support of relationships, North-West facing plots are considered favourable for guest areas and are valued for good air circulation.","left":58.43,"top":21.51,"width_pct":3.91,"height_pct":11.11,"status":"Available"},{"id":13,"width":7.4,"length":17.0,"area":125.8,"deduction":0,"netSqm":125.8,"netSqft":1354.11,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":58.16,"top":32.48,"width_pct":6.61,"height_pct":5.84,"status":"Available"},{"id":14,"width":7.4,"length":17.0,"area":125.8,"deduction":0,"netSqm":125.8,"netSqft":1354.11,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":57.83,"top":37.46,"width_pct":6.61,"height_pct":5.7,"status":"Available"},{"id":15,"width":7.4,"length":17.0,"area":125.8,"deduction":0,"netSqm":125.8,"netSqft":1354.11,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":57.49,"top":42.45,"width_pct":6.68,"height_pct":5.98,"status":"Available"},{"id":16,"width":7.4,"length":17.0,"area":125.8,"deduction":0,"netSqm":125.8,"netSqft":1354.11,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":57.22,"top":47.72,"width_pct":6.61,"height_pct":5.7,"status":"Available"},{"id":17,"width":7.4,"length":17.0,"area":125.8,"deduction":0,"netSqm":125.8,"netSqft":1354.11,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":56.88,"top":52.71,"width_pct":6.61,"height_pct":5.84,"status":"Available"},{"id":18,"width":7.4,"length":17.0,"area":125.8,"deduction":0,"netSqm":125.8,"netSqft":1354.11,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":56.55,"top":57.83,"width_pct":6.61,"height_pct":5.84,"status":"Available"},{"id":19,"width":null,"length":null,"area":150.11,"deduction":0,"netSqm":150.11,"netSqft":1615.78,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":56.21,"top":62.39,"width_pct":7.56,"height_pct":8.12,"status":"Available"},{"id":20,"width":7.95,"length":17.0,"area":135.15,"deduction":0,"netSqm":135.15,"netSqft":1454.75,"isCorner":false,"facing":"East","vastuTitle":"East Facing (Purva)","vastuNote":"East-facing plots receive the first light of the rising sun, symbolising new beginnings, health and positive energy. A classic, widely preferred orientation for residential plots.","left":46.69,"top":50.14,"width_pct":6.61,"height_pct":6.27,"status":"Available"},{"id":21,"width":8.0,"length":17.0,"area":136.0,"deduction":0,"netSqm":136.0,"netSqft":1463.9,"isCorner":false,"facing":"East","vastuTitle":"East Facing (Purva)","vastuNote":"East-facing plots receive the first light of the rising sun, symbolising new beginnings, health and positive energy. A classic, widely preferred orientation for residential plots.","left":47.03,"top":44.59,"width_pct":6.61,"height_pct":6.27,"status":"Available"},{"id":22,"width":8.0,"length":17.0,"area":136.0,"deduction":0,"netSqm":136.0,"netSqft":1463.9,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":47.37,"top":39.17,"width_pct":6.61,"height_pct":6.27,"status":"Available"},{"id":23,"width":8.0,"length":17.0,"area":136.0,"deduction":0,"netSqm":136.0,"netSqft":1463.9,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":47.71,"top":33.62,"width_pct":6.61,"height_pct":6.27,"status":"Available"},{"id":24,"width":null,"length":null,"area":175.41,"deduction":4.35,"netSqm":171.06,"netSqft":1841.29,"isCorner":true,"facing":"East","vastuTitle":"East Facing (Purva)","vastuNote":"East-facing plots receive the first light of the rising sun, symbolising new beginnings, health and positive energy. A classic, widely preferred orientation for residential plots.","left":51.15,"top":21.23,"width_pct":4.12,"height_pct":13.25,"status":"Available"},{"id":25,"width":null,"length":null,"area":149.18,"deduction":0,"netSqm":149.18,"netSqft":1605.77,"isCorner":false,"facing":"North","vastuTitle":"North Facing (Uttar)","vastuNote":"North-facing plots are ruled by Kuber, the deity of wealth, and are traditionally considered favourable for steady prosperity and cash flow. Many buyers prefer keeping the main entrance on this side.","left":48.04,"top":21.08,"width_pct":3.64,"height_pct":12.82,"status":"Available"},{"id":26,"width":null,"length":null,"area":142.87,"deduction":0,"netSqm":142.87,"netSqft":1537.85,"isCorner":false,"facing":"North","vastuTitle":"North Facing (Uttar)","vastuNote":"North-facing plots are ruled by Kuber, the deity of wealth, and are traditionally considered favourable for steady prosperity and cash flow. Many buyers prefer keeping the main entrance on this side.","left":44.94,"top":21.08,"width_pct":3.64,"height_pct":12.11,"status":"Available"},{"id":27,"width":null,"length":null,"area":151.57,"deduction":6.05,"netSqm":145.52,"netSqft":1566.38,"isCorner":true,"facing":"North-West","vastuTitle":"North-West Facing (Vayavya)","vastuNote":"Linked to movement and support of relationships, North-West facing plots are considered favourable for guest areas and are valued for good air circulation.","left":41.5,"top":21.08,"width_pct":3.91,"height_pct":11.54,"status":"Available"},{"id":28,"width":8.0,"length":17.0,"area":136.0,"deduction":0,"netSqm":136.0,"netSqft":1463.9,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":41.16,"top":32.48,"width_pct":6.68,"height_pct":6.27,"status":"Available"},{"id":29,"width":8.0,"length":17.0,"area":136.0,"deduction":0,"netSqm":136.0,"netSqft":1463.9,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":40.82,"top":37.89,"width_pct":6.68,"height_pct":6.27,"status":"Available"},{"id":30,"width":8.0,"length":17.0,"area":136.0,"deduction":0,"netSqm":136.0,"netSqft":1463.9,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":40.49,"top":43.45,"width_pct":6.68,"height_pct":6.27,"status":"Available"},{"id":31,"width":7.95,"length":17.0,"area":135.15,"deduction":0,"netSqm":135.15,"netSqft":1454.75,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":40.08,"top":48.86,"width_pct":6.75,"height_pct":6.13,"status":"Available"},{"id":32,"width":null,"length":null,"area":137.11,"deduction":0,"netSqm":137.11,"netSqft":1475.85,"isCorner":false,"facing":"East","vastuTitle":"East Facing (Purva)","vastuNote":"East-facing plots receive the first light of the rising sun, symbolising new beginnings, health and positive energy. A classic, widely preferred orientation for residential plots.","left":25.78,"top":91.03,"width_pct":6.88,"height_pct":6.13,"status":"Available"},{"id":33,"width":7.5,"length":17.5,"area":131.25,"deduction":0,"netSqm":131.25,"netSqft":1412.78,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":26.11,"top":85.9,"width_pct":6.82,"height_pct":6.13,"status":"Available"},{"id":34,"width":7.5,"length":17.5,"area":131.25,"deduction":0,"netSqm":131.25,"netSqft":1412.78,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":26.45,"top":80.77,"width_pct":6.82,"height_pct":5.98,"status":"Available"},{"id":35,"width":7.5,"length":17.5,"area":131.25,"deduction":0,"netSqm":131.25,"netSqft":1412.78,"isCorner":false,"facing":"East","vastuTitle":"East Facing (Purva)","vastuNote":"East-facing plots receive the first light of the rising sun, symbolising new beginnings, health and positive energy. A classic, widely preferred orientation for residential plots.","left":26.79,"top":75.5,"width_pct":6.82,"height_pct":6.13,"status":"Available"},{"id":36,"width":7.5,"length":17.5,"area":131.25,"deduction":0,"netSqm":131.25,"netSqft":1412.78,"isCorner":false,"facing":"East","vastuTitle":"East Facing (Purva)","vastuNote":"East-facing plots receive the first light of the rising sun, symbolising new beginnings, health and positive energy. A classic, widely preferred orientation for residential plots.","left":27.06,"top":70.51,"width_pct":6.88,"height_pct":5.84,"status":"Available"},{"id":37,"width":7.5,"length":17.5,"area":131.25,"deduction":0,"netSqm":131.25,"netSqft":1412.78,"isCorner":false,"facing":"East","vastuTitle":"East Facing (Purva)","vastuNote":"East-facing plots receive the first light of the rising sun, symbolising new beginnings, health and positive energy. A classic, widely preferred orientation for residential plots.","left":27.4,"top":65.38,"width_pct":6.88,"height_pct":5.98,"status":"Available"},{"id":38,"width":7.5,"length":17.5,"area":131.25,"deduction":0,"netSqm":131.25,"netSqft":1412.78,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":27.73,"top":60.11,"width_pct":6.88,"height_pct":6.13,"status":"Available"},{"id":39,"width":8.5,"length":17.5,"area":148.75,"deduction":6.05,"netSqm":142.7,"netSqft":1536.02,"isCorner":true,"facing":"North-East","vastuTitle":"North-East Facing (Ishanya)","vastuNote":"The North-East corner is regarded as the most auspicious direction in Vastu Shastra, associated with spiritual energy, clarity and growth. Corner plots facing this direction are usually in the highest demand.","left":28.07,"top":54.56,"width_pct":6.95,"height_pct":6.41,"status":"Available"},{"id":40,"width":8.5,"length":17.5,"area":148.75,"deduction":4.35,"netSqm":144.4,"netSqft":1554.32,"isCorner":true,"facing":"North-West","vastuTitle":"North-West Facing (Vayavya)","vastuNote":"Linked to movement and support of relationships, North-West facing plots are considered favourable for guest areas and are valued for good air circulation.","left":21.26,"top":53.13,"width_pct":6.88,"height_pct":6.55,"status":"Available"},{"id":41,"width":7.5,"length":17.5,"area":131.25,"deduction":0,"netSqm":131.25,"netSqft":1412.78,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":20.99,"top":58.97,"width_pct":6.82,"height_pct":5.98,"status":"Available"},{"id":42,"width":7.5,"length":17.5,"area":131.25,"deduction":0,"netSqm":131.25,"netSqft":1412.78,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":20.65,"top":64.1,"width_pct":6.88,"height_pct":5.98,"status":"Available"},{"id":43,"width":7.5,"length":17.5,"area":131.25,"deduction":0,"netSqm":131.25,"netSqft":1412.78,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":20.31,"top":69.23,"width_pct":6.88,"height_pct":5.84,"status":"Available"},{"id":44,"width":7.5,"length":17.5,"area":131.25,"deduction":0,"netSqm":131.25,"netSqft":1412.78,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":19.97,"top":74.22,"width_pct":6.88,"height_pct":6.13,"status":"Available"},{"id":45,"width":7.5,"length":17.5,"area":131.25,"deduction":0,"netSqm":131.25,"netSqft":1412.78,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":19.7,"top":79.49,"width_pct":6.82,"height_pct":5.98,"status":"Available"},{"id":46,"width":7.5,"length":17.5,"area":131.25,"deduction":0,"netSqm":131.25,"netSqft":1412.78,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":19.37,"top":84.62,"width_pct":6.88,"height_pct":5.98,"status":"Available"},{"id":47,"width":null,"length":null,"area":132.84,"deduction":0,"netSqm":132.84,"netSqft":1429.89,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":19.03,"top":89.74,"width_pct":6.88,"height_pct":5.84,"status":"Available"},{"id":48,"width":7.4,"length":15.0,"area":111.0,"deduction":0,"netSqm":111.0,"netSqft":1194.8,"isCorner":false,"facing":"East","vastuTitle":"East Facing (Purva)","vastuNote":"East-facing plots receive the first light of the rising sun, symbolising new beginnings, health and positive energy. A classic, widely preferred orientation for residential plots.","left":11.07,"top":64.96,"width_pct":5.94,"height_pct":5.7,"status":"Available"},{"id":49,"width":7.5,"length":15.0,"area":112.5,"deduction":0,"netSqm":112.5,"netSqft":1210.95,"isCorner":false,"facing":"East","vastuTitle":"East Facing (Purva)","vastuNote":"East-facing plots receive the first light of the rising sun, symbolising new beginnings, health and positive energy. A classic, widely preferred orientation for residential plots.","left":11.47,"top":59.83,"width_pct":5.74,"height_pct":5.7,"status":"Available"},{"id":50,"width":7.5,"length":15.0,"area":112.5,"deduction":0,"netSqm":112.5,"netSqft":1210.95,"isCorner":false,"facing":"East","vastuTitle":"East Facing (Purva)","vastuNote":"East-facing plots receive the first light of the rising sun, symbolising new beginnings, health and positive energy. A classic, widely preferred orientation for residential plots.","left":11.81,"top":54.7,"width_pct":5.74,"height_pct":5.56,"status":"Available"},{"id":51,"width":7.5,"length":15.0,"area":112.5,"deduction":0,"netSqm":112.5,"netSqft":1210.95,"isCorner":false,"facing":"East","vastuTitle":"East Facing (Purva)","vastuNote":"East-facing plots receive the first light of the rising sun, symbolising new beginnings, health and positive energy. A classic, widely preferred orientation for residential plots.","left":12.08,"top":49.57,"width_pct":5.87,"height_pct":5.7,"status":"Available"},{"id":52,"width":7.5,"length":15.0,"area":112.5,"deduction":0,"netSqm":112.5,"netSqft":1210.95,"isCorner":false,"facing":"East","vastuTitle":"East Facing (Purva)","vastuNote":"East-facing plots receive the first light of the rising sun, symbolising new beginnings, health and positive energy. A classic, widely preferred orientation for residential plots.","left":12.42,"top":44.3,"width_pct":5.94,"height_pct":5.84,"status":"Available"},{"id":53,"width":8.0,"length":17.5,"area":140.0,"deduction":4.35,"netSqm":135.65,"netSqft":1460.14,"isCorner":true,"facing":"South-West","vastuTitle":"South-West Facing (Nairutya)","vastuNote":"South-West is associated with stability and strength, and is traditionally favoured for the master bedroom in the eventual house design.","left":21.93,"top":41.45,"width_pct":6.95,"height_pct":6.13,"status":"Available"},{"id":54,"width":7.0,"length":17.5,"area":122.5,"deduction":0,"netSqm":122.5,"netSqft":1318.59,"isCorner":false,"facing":"East","vastuTitle":"East Facing (Purva)","vastuNote":"East-facing plots receive the first light of the rising sun, symbolising new beginnings, health and positive energy. A classic, widely preferred orientation for residential plots.","left":22.4,"top":36.75,"width_pct":6.82,"height_pct":5.56,"status":"Available"},{"id":55,"width":7.0,"length":17.5,"area":122.5,"deduction":0,"netSqm":122.5,"netSqft":1318.59,"isCorner":false,"facing":"West","vastuTitle":"West Facing (Paschim)","vastuNote":"West-facing plots are associated with long-term wealth accumulation and stability, and remain a consistently popular choice among investors.","left":22.6,"top":31.91,"width_pct":6.88,"height_pct":5.7,"status":"Available"},{"id":56,"width":null,"length":null,"area":149.35,"deduction":4.35,"netSqm":145.0,"netSqft":1560.78,"isCorner":true,"facing":"North-West","vastuTitle":"North-West Facing (Vayavya)","vastuNote":"Linked to movement and support of relationships, North-West facing plots are considered favourable for guest areas and are valued for good air circulation.","left":22.94,"top":22.36,"width_pct":4.39,"height_pct":9.83,"status":"Available"},{"id":57,"width":null,"length":null,"area":125.7,"deduction":0,"netSqm":125.7,"netSqft":1353.03,"isCorner":false,"facing":"North","vastuTitle":"North Facing (Uttar)","vastuNote":"North-facing plots are ruled by Kuber, the deity of wealth, and are traditionally considered favourable for steady prosperity and cash flow. Many buyers prefer keeping the main entrance on this side.","left":26.99,"top":22.08,"width_pct":3.58,"height_pct":10.83,"status":"Available"},{"id":58,"width":null,"length":null,"area":135.99,"deduction":0,"netSqm":135.99,"netSqft":1463.8,"isCorner":false,"facing":"North","vastuTitle":"North Facing (Uttar)","vastuNote":"North-facing plots are ruled by Kuber, the deity of wealth, and are traditionally considered favourable for steady prosperity and cash flow. Many buyers prefer keeping the main entrance on this side.","left":30.09,"top":21.79,"width_pct":3.64,"height_pct":11.68,"status":"Available"},{"id":59,"width":null,"length":null,"area":155.78,"deduction":6.05,"netSqm":149.73,"netSqft":1611.69,"isCorner":true,"facing":"East","vastuTitle":"East Facing (Purva)","vastuNote":"East-facing plots receive the first light of the rising sun, symbolising new beginnings, health and positive energy. A classic, widely preferred orientation for residential plots.","left":33.2,"top":21.51,"width_pct":3.91,"height_pct":12.54,"status":"Available"},{"id":60,"width":7.0,"length":17.5,"area":122.5,"deduction":0,"netSqm":122.5,"netSqft":1318.59,"isCorner":false,"facing":"East","vastuTitle":"East Facing (Purva)","vastuNote":"East-facing plots receive the first light of the rising sun, symbolising new beginnings, health and positive energy. A classic, widely preferred orientation for residential plots.","left":29.42,"top":33.19,"width_pct":6.75,"height_pct":5.7,"status":"Available"},{"id":61,"width":7.0,"length":17.5,"area":122.5,"deduction":0,"netSqm":122.5,"netSqft":1318.59,"isCorner":false,"facing":"East","vastuTitle":"East Facing (Purva)","vastuNote":"East-facing plots receive the first light of the rising sun, symbolising new beginnings, health and positive energy. A classic, widely preferred orientation for residential plots.","left":29.15,"top":38.03,"width_pct":6.82,"height_pct":5.56,"status":"Available"},{"id":62,"width":8.0,"length":17.5,"area":140.0,"deduction":6.05,"netSqm":133.95,"netSqft":1441.84,"isCorner":true,"facing":"South","vastuTitle":"South Facing (Dakshin)","vastuNote":"South-facing plots can be equally prosperous when the entrance and internal layout are planned correctly, and are often available at relatively better value.","left":29.08,"top":42.74,"width_pct":6.61,"height_pct":6.27,"status":"Available"}]
+</script>
+
+<!-- ============ MAIN JAVASCRIPT LOGIC ============ -->
+<script>
+const PLOTS = JSON.parse(document.getElementById('plotsData').textContent);
+const byId = Object.fromEntries(PLOTS.map(p => [p.id, p]));
+
+function fmt(n) { 
+  return n.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2}); 
+}
+
+// ---------- Translation Logic ----------
+function setLanguage(lang) {
+  if (!translations[lang]) return;
+  currentLang = lang;
+  document.documentElement.lang = lang;
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (translations[lang][key]) {
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+        el.placeholder = translations[lang][key];
+      } else {
+        el.textContent = translations[lang][key];
+      }
+    }
+  });
+
+  
+  if (activeId) {
+    selectPlot(activeId, false);
+  }
+}
+
+document.getElementById('langSelector').addEventListener('change', (e) => {
+  setLanguage(e.target.value);
+});
+
+
+// ---------- Build Hotspots ----------
+// ---------- Google Sheets Live Inventory ----------
+// 1. Paste your published CSV link here:
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-KJVx40uPWhknGteZvjlo-ZR2T4PPXiVmN8XKS6Hx2ls6IrKLK98Z_RNh-8IBvw4j5rMhylIE7DzA/pub?output=csv";
+
+async function loadLiveInventory() {
+  try {
+    const response = await fetch(SHEET_CSV_URL);
+    const csvText = await response.text();
+    
+    // Parse the CSV data
+    const rows = csvText.split('\n').slice(1); // Skip the header row
+    const statusMap = {};
+    
+    rows.forEach(row => {
+      const cols = row.split(',');
+      if (cols.length >= 2) {
+        const id = parseInt(cols[0].trim());
+        const status = cols[1].trim(); // Should be "Available", "Reserved", or "Sold"
+        if (!isNaN(id) && status) {
+            statusMap[id] = status;
+        }
+      }
+    });
+
+    // Overwrite the hardcoded PLOTS status with the live sheet data
+    PLOTS.forEach(p => {
+      if (statusMap[p.id]) {
+        p.status = statusMap[p.id];
+      }
+    });
+
+    // Now that data is updated, draw the map and table
+    initSite(); 
+    
+  } catch (error) {
+    console.error("Failed to load live data. Falling back to default data.", error);
+    initSite(); // Load defaults if the fetch fails (e.g. no internet)
+  }
+}
+
+function initSite() {
+  // ---------- Build Hotspots ----------
+  const layer = document.getElementById('hotspotLayer');
+  layer.innerHTML = ''; // Clear out any existing placeholders
+
+  PLOTS.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'plot-hotspot status-' + p.status.toLowerCase();
+    el.id = 'plot-' + p.id;
+    el.style.left = p.left + '%';
+    el.style.top = p.top + '%';
+    el.style.width = p.width_pct + '%';
+    el.style.height = p.height_pct + '%';
+    el.title = 'Plot ' + p.id;
+    el.addEventListener('click', () => selectPlot(p.id, true));
+    layer.appendChild(el);
+  });
+
+  // Render the table with fresh data
+  renderDirectory();
+}
+
+// Trigger the live fetch when the page loads
+loadLiveInventory();
+
+let activeId = null;
+function selectPlot(id, scrollIntoView) {
+  const p = byId[id];
+  if(!p) return;
+  if(activeId) document.getElementById('plot-' + activeId)?.classList.remove('active');
+  activeId = id;
+  document.getElementById('plot-' + id)?.classList.add('active');
+
+  document.getElementById('detailsEmpty').classList.add('hidden');
+  document.getElementById('detailsContent').classList.remove('hidden');
+
+  document.getElementById('dPlotNo').textContent = p.id;
+  
+  // Update translated status
+  const statusEl = document.getElementById('dStatus');
+  const statusKey = "status_" + p.status.toLowerCase();
+  statusEl.textContent = translations[currentLang][statusKey] || p.status.toUpperCase();
+  statusEl.className = 'px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap ' +
+    (p.status === 'Available' ? 'bg-green-100 text-green-700' : p.status === 'Reserved' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700');
+
+  document.getElementById('dSqm').textContent = fmt(p.netSqm);
+  document.getElementById('dSqft').textContent = fmt(p.netSqft);
+
+  if(p.width && p.length) {
+    document.getElementById('dDims').textContent = p.width.toFixed(2) + ' m × ' + p.length.toFixed(2) + ' m';
+  } else {
+    document.getElementById('dDims').textContent = translations[currentLang]['plot_irregular'];
+  }
+  document.getElementById('dDed').textContent = p.deduction > 0 ? p.deduction.toFixed(2) + ' sqm (corner plot)' : 'None';
+
+  // Update translated vastu notes
+  const directionKey = p.facing.toLowerCase().replace('-', '_');
+  document.getElementById('dVastuTitle').textContent = translations[currentLang][`vastu_title_${directionKey}`] || p.vastuTitle;
+  document.getElementById('dVastuNote').textContent = translations[currentLang][`vastu_note_${directionKey}`] || p.vastuNote;
+
+  document.getElementById('dBookBtnText').textContent = translations[currentLang]['det_btn_enquire'];
+
+  if(scrollIntoView && window.innerWidth < 1024) {
+    document.getElementById('detailsPanel').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+}
+
+// ---------- Search & Zoom controls ----------
+document.getElementById('plotSearch').addEventListener('keydown', e => {
+  if(e.key === 'Enter') {
+    const id = parseInt(e.target.value);
+    if(byId[id]) {
+      selectPlot(id, true);
+      document.getElementById('plot-' + id).scrollIntoView({behavior:'smooth', block:'center', inline:'center'});
+    }
+  }
+});
+
+let zoom = 1;
+const stage = document.getElementById('mapZoomStage');
+function applyZoom() { stage.style.transform = 'scale(' + zoom + ')'; }
+document.getElementById('zoomIn').addEventListener('click', () => { zoom = Math.min(2.2, zoom + 0.2); applyZoom(); });
+document.getElementById('zoomOut').addEventListener('click', () => { zoom = Math.max(1, zoom - 0.2); applyZoom(); });
+document.getElementById('zoomReset').addEventListener('click', () => { zoom = 1; applyZoom(); });
+
+// ---------- Directory table ----------
+const facingSet = [...new Set(PLOTS.map(p => p.facing))].sort();
+const facingSelect = document.getElementById('dirFacing');
+facingSet.forEach(f => {
+  const o = document.createElement('option');
+  o.value = f; o.textContent = f;
+  facingSelect.appendChild(o);
+});
+
+function statusBadge(status) {
+  const statusKey = "status_" + status.toLowerCase();
+  const translatedStatus = translations[currentLang][statusKey] || status.toUpperCase();
+  const cls = status === 'Available' ? 'bg-green-100 text-green-700' : status === 'Reserved' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700';
+  return '<span class="px-2.5 py-1 rounded-full text-[10px] font-bold ' + cls + '">' + translatedStatus + '</span>';
+}
+
+function renderDirectory() {
+  const q = document.getElementById('dirSearch').value.trim();
+  const facing = document.getElementById('dirFacing').value;
+  const sort = document.getElementById('dirSort').value;
+
+  let rows = PLOTS.filter(p => {
+    if(q && String(p.id) !== q) return false;
+    if(facing && p.facing !== facing) return false;
+    return true;
+  });
+
+  if(sort === 'area-asc') rows.sort((a,b) => a.netSqm - b.netSqm);
+  else if(sort === 'area-desc') rows.sort((a,b) => b.netSqm - a.netSqm);
+  else rows.sort((a,b) => a.id - b.id);
+
+  document.getElementById('dirCount').textContent = rows.length + (rows.length === 1 ? ' plot' : ' plots');
+
+  const body = document.getElementById('dirTableBody');
+  const viewText = translations[currentLang]['plot_view'];
+
+  body.innerHTML = rows.map(p => `
+    <tr class="hover:bg-emerald-50/60 cursor-pointer transition" data-id="${p.id}">
+      <td class="px-4 py-3 font-display font-bold text-emerald-900">#${p.id}</td>
+      <td class="px-4 py-3 text-slate-700">${fmt(p.netSqm)}</td>
+      <td class="px-4 py-3 text-slate-700">${fmt(p.netSqft)}</td>
+      <td class="px-4 py-3 text-slate-700">${translations[currentLang][`vastu_title_${p.facing.toLowerCase().replace('-', '_')}`] || p.facing}</td>
+      <td class="px-4 py-3">${statusBadge(p.status)}</td>
+      <td class="px-4 py-3 text-right"><span class="text-emerald-700 text-xs font-semibold">${viewText}</span></td>
+    </tr>
+  `).join('');
+
+  body.querySelectorAll('tr').forEach(tr => {
+    tr.addEventListener('click', () => {
+      const id = parseInt(tr.dataset.id);
+      document.getElementById('map').scrollIntoView({behavior:'smooth', block:'start'});
+      setTimeout(() => selectPlot(id, false), 350);
+    });
+  });
+}
+
+['dirSearch','dirFacing','dirSort'].forEach(id => {
+  document.getElementById(id).addEventListener('input', renderDirectory);
+});
+
+// Initialize
+setLanguage('en'); 
+
+// ---------- Reveal on scroll ----------
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('in'); });
+}, {threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+</body>
+</html>
